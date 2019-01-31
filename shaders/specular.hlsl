@@ -20,14 +20,13 @@ cbuffer ConstantBufferLight : register ( b2 )
 	float4 lightDir;
 }
 
-
-
 struct VertexShaderOutput
 {
     float4 position : SV_POSITION;
-	float4 light : TEXCOORD0;
-	float4 normal : TEXCOORD1;
-	float4 view : TEXCOORD2;
+	float4 light : POSITION0;
+	float4 normal : NORMAL;
+	float4 view : POSITION1;
+	float4 texCoord : TEXCOORD0;
 };
 
 VertexShaderOutput vertexShaderMain( float4 position :	position,
@@ -42,6 +41,7 @@ VertexShaderOutput vertexShaderMain( float4 position :	position,
 	output.view = eye - posWorld;
 	normal.w = 0.0f;
 	output.normal = mul(normal, world);
+	output.texCoord = texCoord;
     return output;
 }
 
@@ -62,5 +62,5 @@ float4 pixelShaderMain( VertexShaderOutput input ) : SV_Target
 	}
 
 	// I = Acolor + Dcolor * N.L + (R.V)n
-	return ambient + diffuse * diff + specular; 
+	return ambient + diffuse * diff + specular;
 }

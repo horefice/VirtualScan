@@ -53,21 +53,25 @@ bool Fuser::fuse(const std::string& outputFile, Scene& scene, const std::vector<
 	for (size_t i = 0; i < cameras.size(); i++) {
 		const auto& c = cameras[i];
 
+		ColorImageR8G8B8A8 color;
 		DepthImage32 depth;
 #pragma omp critical 
 		{
-			render(scene, c, depth);
+			render(scene, c, SimpleMaterial::default(), color, depth);
 		}
 
 		if (debugOut && (i % 50) == 0) {//&& i == 0) {
 			FreeImageWrapper::saveImage(util::removeExtensions(outputFile) + "_depth_rep" + std::to_string(i) + ".png", ColorImageR32G32B32(depth), true);
+		}
+		if (debugOut && (i % 50) == 0) {//&& i == 0) {
+			FreeImageWrapper::saveImage(util::removeExtensions(outputFile) + "_color_rep" + std::to_string(i) + ".png", ColorImageR32G32B32(color), true);
 		}
 
 		mat4f projToCamera = c.getProj().getInverse();
 		mat4f cameraToWorld = c.getExtrinsic();
 		mat4f projToWorld = cameraToWorld * projToCamera;
 		mat4f intrinsic = Cameraf::graphicsToVisionProj(c.getProj(), depth.getWidth(), depth.getHeight());
-
+		
 		PointCloudf pcCurrFrame;
 		for (auto &p : depth) {
 			if (p.value != 0.0f && p.value != 1.0f) {
@@ -90,9 +94,9 @@ bool Fuser::fuse(const std::string& outputFile, Scene& scene, const std::vector<
 				p.value = 0.0f;
 			}
 		}
-
-		grid.integrate(intrinsic, cameraToWorld, depth);
-
+		
+		grid.integrate(intrinsic, cameraToWorld, depth, color);
+		/*
 		if (GlobalAppState::get().s_generatePointClouds) {
 			for (unsigned int i = 1; i < 5; i++) {
 				PointCloudf pcSparse = pcCurrFrame;
@@ -103,7 +107,7 @@ bool Fuser::fuse(const std::string& outputFile, Scene& scene, const std::vector<
 				}
 			}
 			pc.merge(pcCurrFrame);
-		}
+		}*/
 	}
 
 	if (GlobalAppState::get().s_generatePointClouds) {

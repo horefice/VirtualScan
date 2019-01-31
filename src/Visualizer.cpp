@@ -134,13 +134,14 @@ bool Visualizer::processModel(const MeshInfo& modelInfo, ApplicationData &app, F
 
 	try {
 		MeshDataf meshData = MeshIOf::loadFromFile(modelInfo.path);
-		meshData.clearAttributes();
-		meshData.mergeCloseVertices(0.004f);
-		meshData.removeDegeneratedFaces();
-		meshData.removeDuplicateFaces();
-		meshData.removeDuplicateVertices();
-		meshData.removeIsolatedVertices();
-		//MeshIOf::saveToFile("_after_filt.ply", meshData);
+		//meshData.clearAttributes();
+		//MeshIOf::saveToFile("_before_filt.ply", meshData);
+		//meshData.mergeCloseVertices(0.004f);
+		//meshData.removeDegeneratedFaces();
+		//meshData.removeDuplicateFaces();
+		//meshData.removeDuplicateVertices();
+		//meshData.removeIsolatedVertices();
+		//MeshIOf::saveToFile("test.obj", meshData);
 		if (meshData.m_Vertices.empty()) {
 			std::cout << "skipping empty mesh" << std::endl;
 			return false;
@@ -157,6 +158,7 @@ bool Visualizer::processModel(const MeshInfo& modelInfo, ApplicationData &app, F
 				meshData.applyTransform(transform);
 			}
 		}
+		//MeshIOf::saveToOBJ("test.obj", meshData);
 
 		if (!meshData.isTriMesh()) meshData.makeTriMesh();
 		TriMeshf triMeshOrig(meshData);
@@ -186,9 +188,9 @@ bool Visualizer::processModel(const MeshInfo& modelInfo, ApplicationData &app, F
 			if (bGenerateCameras) cameraTrajectories.push_back(cameraTrajectory);
 #endif
 
-			TriMeshf triMesh = triMeshOrig;
+			//TriMeshf triMesh = triMeshOrig;
 
-			Scene scene(app.graphics, triMesh);
+			Scene scene(app.graphics, meshData, modelInfo.path);
 			std::string outFile = outPrefix + "__" + std::to_string(r) + "__" + ".fsdf";
 			const std::string outSubDir = util::directoryFromPath(outFile);
 			if (!util::directoryExists(outSubDir)) util::makeDirectory(outSubDir);

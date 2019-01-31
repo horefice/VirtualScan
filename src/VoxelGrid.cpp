@@ -5,7 +5,7 @@
 
 
 
-void VoxelGrid::integrate(const mat4f& intrinsic, const mat4f& cameraToWorld, const DepthImage32& depthImage)
+void VoxelGrid::integrate(const mat4f& intrinsic, const mat4f& cameraToWorld, const DepthImage32& depthImage, const ColorImageR8G8B8A8& colorImage)
 {
 	const mat4f worldToCamera = cameraToWorld.getInverse();
 	BoundingBox3<int> voxelBounds = computeFrustumBounds(intrinsic, cameraToWorld, depthImage.getWidth(), depthImage.getHeight());
@@ -24,6 +24,7 @@ void VoxelGrid::integrate(const mat4f& intrinsic, const mat4f& cameraToWorld, co
 				vec3i pi = math::round(p);
 				if (pi.x >= 0 && pi.y >= 0 && pi.x < (int)depthImage.getWidth() && pi.y < (int)depthImage.getHeight()) {
 					float d = depthImage(pi.x, pi.y);
+					vec3uc c = colorImage(pi.x, pi.y).getVec3();
 
 					//check for a valid depth range
 					if (d >= m_depthMin && d <= m_depthMax) {
@@ -42,6 +43,7 @@ void VoxelGrid::integrate(const mat4f& intrinsic, const mat4f& cameraToWorld, co
 							if (std::abs(sdf) <= std::abs(v.sdf)) {
 								v.sdf = sdf;
 								v.weight = 1;
+								v.color = c;
 							}
 							//if (v.sdf == -std::numeric_limits<float>::infinity()) {
 							//	v.sdf = sdf;

@@ -43,7 +43,7 @@ public:
 		}
 	}
 
-	void integrate(const mat4f& intrinsic, const mat4f& cameraToWorld, const DepthImage32& depthImage);
+	void integrate(const mat4f& intrinsic, const mat4f& cameraToWorld, const DepthImage32& depthImage, const ColorImageR8G8B8A8& colorImage);
 
 	//! normalizes the SDFs (divides by the voxel size)
 	void normalizeSDFs()  {
@@ -184,10 +184,13 @@ public:
 		outFile.write((const char*)&dimZ, sizeof(UINT64));
 		outFile.write((const char*)m_worldToGrid.getData(), sizeof(mat4f));
 		std::vector<float> sdfvalues(getNumElements());
+		std::vector<vec3uc> rgb_values(3*getNumElements());
 		for (unsigned int i = 0; i < getNumElements(); i++) {
 			sdfvalues[i] = getData()[i].sdf;
+			rgb_values[i] = getData()[i].color;
 		}
 		outFile.write((const char*)sdfvalues.data(), sizeof(float)*sdfvalues.size());
+		outFile.write((const char*)rgb_values.data(), 3*sizeof(char)*rgb_values.size());
 		outFile.close();
 	}
 

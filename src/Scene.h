@@ -14,6 +14,25 @@ public:
 		}
 	}
 
+	RenderObject(GraphicsDevice& g, const std::pair<MeshDataf, Materialf>& pair, const mat4f& modelToWorld, const std::string& modelPath) {
+		TriMeshf triMesh(pair.first);
+		m_triMesh.init(g, triMesh);
+
+		Materialf material = pair.second;
+		if (material.m_TextureFilename_Kd != "") {
+			ColorImageR32G32B32A32 imageMaterial;
+			FreeImageWrapper::loadImage(util::directoryFromPath(modelPath) + material.m_TextureFilename_Kd, imageMaterial);
+
+			m_material.init(g, imageMaterial);
+		}
+
+		m_modelToWorld = modelToWorld;
+
+		for (const auto& v : triMesh.getVertices()) {
+			m_boundingBoxWorld.include(m_modelToWorld * v.position);
+		}
+	}
+
 	~RenderObject() {
 
 	}
@@ -25,15 +44,20 @@ public:
 	const D3D11TriMesh& getD3D11TriMesh() const {
 		return m_triMesh;
 	}
+	
+	const D3D11Texture2D<vec4f>& getD3D11Texture2D() const {
+		return m_material;
+	}
 
 	const BoundingBox3f& getBoundingBoxWorld() const {
 		return m_boundingBoxWorld;
 	}
 
 private:
-	mat4f			m_modelToWorld;
-	D3D11TriMesh	m_triMesh;
-	BoundingBox3f	m_boundingBoxWorld;
+	mat4f					m_modelToWorld;
+	D3D11TriMesh			m_triMesh;
+	D3D11Texture2D<vec4f>	m_material;
+	BoundingBox3f			m_boundingBoxWorld;
 };
 
 
@@ -51,6 +75,10 @@ public:
 
 	Scene(GraphicsDevice& g, const TriMeshf& triMesh) {
 		loadMesh(g, triMesh);
+	}
+
+	Scene(GraphicsDevice& g, const MeshDataf& meshData, const std::string& modelPath) {
+		loadMesh(g, meshData, modelPath);
 	}
 
 	~Scene() {
@@ -82,9 +110,8 @@ public:
 
 		//TODO factor our the shader loading; ideally every object has a shader
 		m_shaders.init(g);
-		m_shaders.registerShader("shaders/depthOnly.hlsl", "depthOnly");
 		m_shaders.registerShader("shaders/specular.hlsl", "specular");
-		m_shaders.registerShader("shaders/test.hlsl", "test");
+		m_shaders.registerShader("shaders/texture.hlsl", "texture");
 
 		mat4f modelToWorld = mat4f::identity();
 		m_objects.push_back(RenderObject(*m_graphics, triMesh, modelToWorld));
@@ -94,6 +121,32 @@ public:
 		}
 	}
 
+	void loadMesh(GraphicsDevice& g, const MeshDataf& meshData, const std::string& modelPath) {
+		m_graphics = &g;
+
+		m_cbCamera.init(g);
+		m_cbMaterial.init(g);
+		m_cbLight.init(g);
+
+		//TODO factor our the shader loading; ideally every object has a shader
+		m_shaders.init(g);
+		m_shaders.registerShader("shaders/specular.hlsl", "specular");
+		m_shaders.registerShader("shaders/texture.hlsl", "texture");
+
+		std::vector<std::pair<MeshDataf, Materialf>> meshDataByMaterial = meshData.splitByMaterial();
+
+		//TriMeshf triMesh(meshDataByMaterial.at(0).first);
+		//m_objects.push_back(RenderObject(*m_graphics, triMesh, mat4f::identity()));
+		
+		for (const std::pair<MeshDataf, Materialf> p : meshDataByMaterial) {
+			mat4f modelToWorld = mat4f::identity();
+			m_objects.push_back(RenderObject(*m_graphics, p, modelToWorld, modelPath));
+		}
+
+		for (const RenderObject& o : m_objects) {
+			m_boundingBox.include(o.getBoundingBoxWorld());
+		}
+	}
 
 	void render(const Cameraf& camera, const SimpleMaterial& material = SimpleMaterial::default()) {
 
@@ -115,7 +168,13 @@ public:
 			cbMaterial.shiny = material.shiny;
 			m_cbMaterial.updateAndBind(cbMaterial, 1);
 
-			m_shaders.bindShaders("specular");
+			if (o.getD3D11Texture2D().isInit()) {
+				o.getD3D11Texture2D().bind();
+				m_shaders.bindShaders("texture");
+			}
+			else {
+				m_shaders.bindShaders("specular");
+			}
 
 			o.getD3D11TriMesh().render();
 		}
@@ -174,6 +233,5 @@ private:
 
 	std::vector<RenderObject> m_objects;
 	BoundingBox3f m_boundingBox;
-
 };
 
