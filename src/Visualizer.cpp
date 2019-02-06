@@ -18,7 +18,7 @@ void Visualizer::init(ApplicationData &app)
 		if (GlobalAppState::get().s_scanWholeShape && GlobalAppState::get().s_numTrajectories > 1)
 			throw MLIB_EXCEPTION("invalid configuration: cannot have >1 trajectory for scan whole shape");
 
-		m_meshFiles.loadFromList(GlobalAppState::get().s_meshDirectory, GlobalAppState::get().s_meshFileList);
+		m_meshFiles.loadFromList(GlobalAppState::get().s_meshDirectory);
 		//m_scene.loadMesh(app.graphics, m_meshFiles.getFiles().front());
 	}
 	catch (MLibException& e)

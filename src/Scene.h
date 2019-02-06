@@ -110,6 +110,7 @@ public:
 
 		//TODO factor our the shader loading; ideally every object has a shader
 		m_shaders.init(g);
+		m_shaders.registerShader("shaders/test.hlsl", "test");
 		m_shaders.registerShader("shaders/specular.hlsl", "specular");
 		m_shaders.registerShader("shaders/texture.hlsl", "texture");
 
@@ -130,6 +131,7 @@ public:
 
 		//TODO factor our the shader loading; ideally every object has a shader
 		m_shaders.init(g);
+		m_shaders.registerShader("shaders/test.hlsl", "test");
 		m_shaders.registerShader("shaders/specular.hlsl", "specular");
 		m_shaders.registerShader("shaders/texture.hlsl", "texture");
 
@@ -173,7 +175,7 @@ public:
 				m_shaders.bindShaders("texture");
 			}
 			else {
-				m_shaders.bindShaders("specular");
+				m_shaders.bindShaders("test");
 			}
 
 			o.getD3D11TriMesh().render();
