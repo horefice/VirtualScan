@@ -1,8 +1,8 @@
 
 
-# VirtualScan
+# VirtualScan (with textures)
 
-Computes virtually scanned signed distance fields for an object.
+Computes virtually scanned signed distance fields + voxel colors for an object.
 
 ### Installation
 The code was developed under VS2013.
@@ -15,3 +15,5 @@ Requirements:
 
 ### To Run:
 [`zParametersDefault.txt`](zParametersDefault.txt) defines the parameters for the virtual scanning. An example can be run using [ShapeNet.v2](https://shapenet.org/) to generate a scanned SDF of the chair in [`example_chair.txt`](example_chair.txt)
+
+#### Forked from angeladai
