@@ -48,7 +48,7 @@ public:
 					
 					if (fs::is_directory(model_path)) {
 						std::string meshFile = model_entry.path().string() + "/models/model_normalized.obj"; // hardcoded shapenet v2 paths!
-						m_infos.push_back(MeshInfo{ meshFile, model_entry.path().filename().string(), model_entry.path().filename().string() });
+						m_infos.push_back(MeshInfo{ meshFile, class_entry.path().filename().string(), model_entry.path().filename().string() });
 					}
 				}
 			}
